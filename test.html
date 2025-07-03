@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Data Entry Operator Typing Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background: #f0f2f5;
+    }
+    h2 {
+      color: #333;
+    }
+    .record-container {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 20px;
+      background: #fff;
+      border-radius: 10px;
+    }
+    .record-fields input {
+      margin: 5px 0;
+      width: 100%;
+      padding: 8px;
+    }
+    .original-data {
+      font-weight: bold;
+      background: #f9f9f9;
+      padding: 10px;
+      user-select: none;
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .results {
+      margin-top: 30px;
+      font-size: 18px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Data Entry Typing Test</h2>
+  <p>Please transcribe the following 10 records. Copy-pasting is disabled. Complete all fields before submitting.</p>
+
+  <form id="typingTestForm">
+    <div id="recordsContainer"></div>
+    <button type="submit">Submit</button>
+  </form>
+
+  <div class="results" id="results" style="display:none;"></div>
+
+  <script>
+    const dataRecords = [
+      {id: "001", name: "Arjun Nair", address: "12 MG Road, Kochi", email: "arjun.n@example.com", phone: "9876543210", remarks: "Verified"},
+      {id: "002", name: "Priya Menon", address: "45 Green Street, Trivandrum", email: "priya.m@example.com", phone: "9567458392", remarks: "Pending"},
+      {id: "003", name: "Rahul Das", address: "3B Skyline Apartments, Calicut", email: "rahul.d@example.com", phone: "9988776655", remarks: "Approved"},
+      {id: "004", name: "Sneha Thomas", address: "88 Park Lane, Kollam", email: "sneha.t@example.com", phone: "9123456789", remarks: "Verified"},
+      {id: "005", name: "Vinod Kumar", address: "10 Lotus Villa, Thrissur", email: "vinod.k@example.com", phone: "9090909090", remarks: "Rejected"},
+      {id: "006", name: "Divya Ramesh", address: "76 High Street, Alappuzha", email: "divya.r@example.com", phone: "9012345678", remarks: "Approved"},
+      {id: "007", name: "Nikhil B", address: "25 Beach Road, Kannur", email: "nikhil.b@example.com", phone: "9801234567", remarks: "Pending"},
+      {id: "008", name: "Anjali Pillai", address: "34 Sunrise Ave, Pathanamthitta", email: "anjali.p@example.com", phone: "9871234560", remarks: "Verified"},
+      {id: "009", name: "Suresh Nair", address: "54 Hilltop, Kottayam", email: "suresh.n@example.com", phone: "9845098450", remarks: "Approved"},
+      {id: "010", name: "Revathi K", address: "92 River View, Idukki", email: "revathi.k@example.com", phone: "9797979797", remarks: "Rejected"}
+    ];
+
+    let startTime;
+
+    function disableCopyPaste(el) {
+      el.setAttribute("oncopy", "return false");
+      el.setAttribute("onpaste", "return false");
+    }
+
+    function createForm() {
+      const container = document.getElementById('recordsContainer');
+      dataRecords.forEach((record, i) => {
+        const div = document.createElement("div");
+        div.className = "record-container";
+        div.innerHTML = `
+          <div class="original-data">
+            Record ${i + 1}:<br>
+            ID: ${record.id}, Name: ${record.name}, Address: ${record.address},<br>
+            Email: ${record.email}, Phone: ${record.phone}, Remarks: ${record.remarks}
+          </div>
+          <div class="record-fields">
+            <input type="text" placeholder="Enter ID" required>
+            <input type="text" placeholder="Enter Name" required>
+            <input type="text" placeholder="Enter Address" required>
+            <input type="text" placeholder="Enter Email" required>
+            <input type="text" placeholder="Enter Phone" required>
+            <input type="text" placeholder="Enter Remarks" required>
+          </div>
+        `;
+        container.appendChild(div);
+
+        // Disable copy-paste
+        div.querySelectorAll("input").forEach(disableCopyPaste);
+      });
+
+      startTime = new Date();
+    }
+
+    function compareEntries(userData, correctData) {
+      let correct = 0, total = 0;
+      userData.forEach((record, i) => {
+        const keys = ["id", "name", "address", "email", "phone", "remarks"];
+        keys.forEach(k => {
+          const userVal = record[k].trim().toLowerCase();
+          const correctVal = correctData[i][k].trim().toLowerCase();
+          if (userVal === correctVal) correct++;
+          total++;
+        });
+      });
+      return { correct, total };
+    }
+
+    document.getElementById("typingTestForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const now = new Date();
+      const timeTakenSec = Math.floor((now - startTime) / 1000);
+      const fields = document.querySelectorAll(".record-fields");
+      let userEntries = [];
+
+      for (let f of fields) {
+        const inputs = f.querySelectorAll("input");
+        if ([...inputs].some(inp => inp.value.trim() === "")) {
+          alert("Please fill all fields before submitting.");
+          return;
+        }
+        userEntries.push({
+          id: inputs[0].value,
+          name: inputs[1].value,
+          address: inputs[2].value,
+          email: inputs[3].value,
+          phone: inputs[4].value,
+          remarks: inputs[5].value,
+        });
+      }
+
+      const { correct, total } = compareEntries(userEntries, dataRecords);
+      const wordsTyped = userEntries.reduce((acc, rec) => acc + Object.values(rec).join(" ").split(" ").length, 0);
+      const wpm = ((wordsTyped / timeTakenSec) * 60).toFixed(2);
+      const accuracy = ((correct / total) * 100).toFixed(2);
+
+      document.getElementById("results").style.display = "block";
+      document.getElementById("results").innerHTML = `
+        <h3>Results:</h3>
+        <p><strong>Accuracy:</strong> ${accuracy}%</p>
+        <p><strong>Words Per Minute (WPM):</strong> ${wpm}</p>
+        <p><strong>Total Time Taken:</strong> ${timeTakenSec} seconds</p>
+      `;
+    });
+
+    createForm();
+  </script>
+</body>
+</html>
